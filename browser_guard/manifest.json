@@ -1,0 +1,9 @@
+{
+  "manifest_version": 3,
+  "name": "Aegis Browser Guard — Prototype",
+  "version": "0.2.0",
+  "description": "Small, local ad/tracker domain blocker. No telemetry. Desktop Chrome/Edge prototype.",
+  "permissions": ["declarativeNetRequest"],
+  "action": {"default_popup": "popup.html"},
+  "declarative_net_request": {"rule_resources": [{"id": "starter", "enabled": true, "path": "rules.json"}]}
+}

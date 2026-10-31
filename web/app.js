@@ -14,6 +14,9 @@ function showDetail(r) {
   const ul = node('ul'); r.actions.forEach(a => ul.append(node('li', a))); actions.append(ul); d.append(actions);
   const evidence = node('details'); evidence.open = true; evidence.append(node('summary', 'Original source record'), node('pre', JSON.stringify(r.alert, null, 2))); d.append(evidence);
   d.append(block('Intelligence coverage', 'Offline: IP reputation was not checked. Priority is a triage aid, not a confirmed malicious verdict.'));
+  if(r.ai_draft) d.append(block('Local AI draft · verify against evidence',r.ai_draft.text));
+  if(r.ai_error) d.append(block('AI unavailable',r.ai_error));
+  d.append(aiButton(r));
 }
 function renderList() {
   const q = $('search').value.toLowerCase(), band = $('band').value;
@@ -32,6 +35,17 @@ async function load(data) {
     $('metrics').replaceChildren();
     [['Alerts in queue', results.length], ['Critical priority', results.filter(r=>r.band.startsWith('P1')).length], ['Hosts observed', new Set(results.map(r=>r.alert.host)).size], ['Actions executed', 0]].forEach(([label, value]) => { const card=node('div'); card.append(node('span',label),node('strong',String(value))); $('metrics').append(card); });
     $('export').disabled = false; showDetail(results[0]); $('message').textContent = `${results.length} alerts ready · offline analysis complete`;
+    if($('auto-ai').checked) {
+      const queue=results.slice(0,25);let completed=0;
+      for(const result of queue) {
+        $('ai-progress').textContent=`AI explanation ${completed+1}/${queue.length} · rule alerts remain visible`;
+        try {result.ai_draft=await api('/api/explain',{context:result});completed++;}
+        catch(error){result.ai_error=error.message;$('ai-progress').textContent=`AI stopped: ${error.message}`;break;}
+        if(selected===result.source_row)showDetail(result);
+      }
+      if(completed===queue.length)$('ai-progress').textContent=`${completed} AI drafts ready${results.length>25?' · remaining alerts can be explained individually':''}.`;
+      if(selected!==null)showDetail(results.find(r=>r.source_row===selected));
+    } else $('ai-progress').textContent='';
   } catch(e) { $('message').textContent = `Import failed: ${e.message}. Previous queue retained.`; }
   finally {busy=false; $('sample').disabled=false; $('file').disabled=false;}
 }

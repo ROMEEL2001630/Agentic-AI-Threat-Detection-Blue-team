@@ -55,6 +55,24 @@ class DashboardTests(unittest.TestCase):
             response = connection.getresponse()
             self.assertIn("script-src 'self'", response.getheader('Content-Security-Policy'))
             self.assertIn(b'AEGIS', response.read())
+            for endpoint, payload, expected in [
+                ('/api/cvss', {'vector': 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H'}, 200),
+                ('/api/check', {'text': 'Urgent send your password'}, 200),
+                ('/api/network', {'csv': (ROOT / 'sample_network.csv').read_text()}, 200),
+                ('/api/cvss', [], 400),
+                ('/api/check', {'text': None}, 400)]:
+                connection.request('POST', endpoint, json.dumps(payload), {'Content-Type': 'application/json'})
+                response = connection.getresponse()
+                self.assertEqual(response.status, expected, endpoint)
+                response.read()
+            connection.request('POST', '/api/check', 'text=x', {'Content-Type': 'application/x-www-form-urlencoded'})
+            response = connection.getresponse()
+            self.assertEqual(response.status, 415)
+            response.read()
+            connection.request('GET', '/', headers={'Host': 'attacker.example'})
+            response = connection.getresponse()
+            self.assertEqual(response.status, 403)
+            response.read()
         finally:
             connection.close()
             server.shutdown()
