@@ -1,0 +1,8 @@
+timestamp,event_type,src_ip,host,user,outcome,dest_port,query
+2026-10-30T10:00:00Z,auth,192.0.2.10,laptop-01,alex,failure,,
+2026-10-30T10:00:10Z,auth,192.0.2.10,laptop-01,alex,failure,,
+2026-10-30T10:00:20Z,auth,192.0.2.10,laptop-01,alex,failure,,
+2026-10-30T10:00:30Z,auth,192.0.2.10,laptop-01,alex,failure,,
+2026-10-30T10:00:40Z,auth,192.0.2.10,laptop-01,alex,failure,,
+2026-10-30T10:01:00Z,auth,192.0.2.10,laptop-01,alex,success,,
+2026-10-30T10:02:00Z,dns,192.0.2.20,laptop-02,,,,abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz.example.test

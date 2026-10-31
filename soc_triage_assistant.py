@@ -163,9 +163,12 @@ def llm_note(alert, tactic, tech_name, band, reasons, enrichment, mode):
     return "(unknown LLM mode)"
 
 
-def process(alert, mode):
+def process(alert, mode, *, online=True):
     entities = alert.get("entities", {})
-    enrichment = [enrich_ip(ip) for ip in entities.get("ips", [])]
+    enrichment = [enrich_ip(ip) if online else
+                  {"ip": ip, "abuse_score": None, "source": "offline",
+                   "note": "Live enrichment disabled"}
+                  for ip in entities.get("ips", [])]
     score, band, reasons = priority(alert, enrichment)
     tech = alert.get("technique", "")
     tech_name, tactic = ATTACK.get(tech, ("Unknown", "Unknown"))
